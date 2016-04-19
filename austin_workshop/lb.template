@@ -1,0 +1,59 @@
+{
+    "heat_template_version": "2013-05-23",
+    "description": "Configuration for Haproxy Neutron Loadbalacer service",
+    "parameters": {
+        "Subnet": {
+            "type": "string",
+            "description": "Pool Subnet CIDR, on which VIP port should be created"},
+        "vip_ip": {
+            "type": "string",
+            "description": "VIP IP Address"},
+        "service_chain_metadata": {
+            "type": "string",
+            "description": "sc metadata"}
+    },
+    "resources": {
+        "LoadBalancerPool": {
+            "type": "OS::Neutron::Pool",
+            "properties": {
+                "lb_method": "ROUND_ROBIN",
+                "protocol": "HTTP",
+                "name": "Haproxy pool",
+                "admin_state_up": true,
+                "subnet_id": {
+                    "get_param": "Subnet"},
+                "vip": {
+                    "subnet": {
+                        "get_param": "Subnet"},
+                    "protocol_port": 80,
+                    "description": {
+                        "get_param": "service_chain_metadata"},
+                    "admin_state_up": true,
+                    "address": {
+                        "get_param": "vip_ip"},
+                    "connection_limit": -1,
+                    "name": "LoadBalancerPool vip"},
+                "provider": "haproxy_on_vm",
+                "monitors": [{"get_resource": "HealthMonitor"}],
+                "description": "Haproxy pool from template"}
+        },
+        "HealthMonitor": {
+            "type": "OS::Neutron::HealthMonitor",
+            "properties": {
+                "delay": 20,
+                "max_retries": 5,
+                "type": "PING",
+                "timeout": 10,
+                "admin_state_up": true}
+	},
+        "LoadBalancer": {
+            "type": "OS::Neutron::LoadBalancer",
+            "properties": {
+                "protocol_port": 80,
+                "pool_id": {
+                    "get_resource": "LoadBalancerPool"}
+            }
+        }
+    }
+}
+
