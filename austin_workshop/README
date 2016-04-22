@@ -1,4 +1,4 @@
-0. Update Service profile variable value with respective variable name according to setup in gbp_resource.sh.
+0. Update Service profile variable value with respective variable name according to setup in workflow.sh.
 1. Update keystone_identity_v3 file and keystonerc_cloud_admin with right credentials and IP.
 2. Update below line in  workflow.sh file  with os controller ip (ex:10.102.1.40 is a os controller ip) 
    echo -e "export OS_AUTH_URL=http://10.102.1.40:5000/v3/">>$PWD/keystone_directory/keystone-mem$i
@@ -10,7 +10,7 @@
        Enter create or delete (Shared gbp resources)
      B). If tenant
        Enter create, update, or delete  
-     a) Enter 'n'
+     a) Enter 'n' (If n is 1 then service insertion is sequential and more than 1 means service insertion will be parallel in n tenants.)
      b) Enter total number of tenants
      c) 'create' for create operation which will pre-launch service chains (firewall and loadbalancer VMs,PRSs, PTGS etc).
 
@@ -42,7 +42,7 @@ Password is same as user name for each  tenant.
 Domain : default (For all tenants)
 
 
-For launching vyos fw update variable "fw_prof" with vyos_fw profile name in gbp_resource.sh
+For launching vyos fw update variable "fw_prof" with vyos_fw profile name in workflow.sh
 
 Example :
 bash workflow.sh
