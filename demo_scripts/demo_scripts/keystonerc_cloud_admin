@@ -1,0 +1,6 @@
+export OS_USERNAME=neutron
+export OS_TENANT_NAME=services
+export OS_PASSWORD=noir0123
+export OS_AUTH_URL=http://10.251.1.20:5000/v2.0/
+export OS_REGION_NAME=RegionOne
+export PS1='[\u@\h \W(keystone_neutrom)]\$ '

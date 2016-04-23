@@ -1,0 +1,58 @@
+0. Update Service profile variable value with respective variable name according to setup in workflow.sh.
+1. Update keystone_identity_v3 file and keystonerc_cloud_admin with right credentials and IP.
+2. Update below line in  workflow.sh file  with os controller ip (ex:10.102.1.40 is a os controller ip) 
+   echo -e "export OS_AUTH_URL=http://10.102.1.40:5000/v3/">>$PWD/keystone_directory/keystone-mem$i
+3. Precreate resources 
+    workflow.sh will pre-create 3 tier resources in sequntial order as per the interactive .
+   bash workflow.sh 
+   Enter operator or tenant 
+     A). If operator :
+       Enter create or delete (Shared gbp resources)
+     B). If tenant
+       Enter create, update, or delete  
+     a) Enter 'n' (If n is 1 then service insertion is sequential and more than 1 means service insertion will be parallel in n tenants.)
+     b) Enter total number of tenants
+     c) 'create' for create operation which will pre-launch service chains (firewall and loadbalancer VMs,PRSs, PTGS etc).
+
+4. Update resources: This operation is parallel for all tenants 
+   bash workflow.sh 
+   a) Enter total number of tenants
+   b) Enter total number of tenants
+   c) 'update' for updating prs which will launch fw service chain between App and DB groups
+
+
+
+5. Delete resources: This operation is parallel for all tenants 
+   bash workflow.sh 
+   a) Enter total number of tenants
+   b) Enter total number of tenants
+   c) 'delete' for deleting all resources from all tenants
+
+   
+6. bash user_delete.sh for deleting tenant and user after deleting all gbp resources from all existing mem tenant.
+
+
+Notes:
+User credentil for each tenant :
+i=1000 and j=17
+user:TENANT<i+j> . Ex : TENANT1000, TENANT1017, TENANT1034 
+
+Password is same as user name for each  tenant.
+
+Domain : default (For all tenants)
+
+
+For launching vyos fw update variable "fw_prof" with vyos_fw profile name in workflow.sh
+
+Example :
+bash workflow.sh
+
+Enter number of tenant sets which will be used for resource creation in parallel order
+2
+Enter total number of tenants
+50
+Enter create or delete or update (update operation update prs which will launch fw chain)
+create
+
+"Now tenant and user creation will strart"
+
