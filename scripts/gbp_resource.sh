@@ -1,8 +1,10 @@
 #!/bash/bin
+
 dynamic=fw-lb
 image_name=cirros
 ext_segment=Datacenter-Out
 flav=m1.tiny
+
 function add_mem()
 {
     image_id=$(openstack image list |grep  "$image_name" |awk '{print $2}'|head -n 1)
@@ -105,38 +107,39 @@ function dynamicinsertion()
 }
 
 
-function pre_create(){
+function pre_create()
+{
     action_name=$(gbp policy-action-list  |grep -w  FW-LB-REDIRECT |awk '{print $4}')
     if [ "$action_name" == "FW-LB-REDIRECT" ]
     then
         echo -e "Delete previous gbp unshared resources which u created in tenant ."
     else
-	gbp policy-action-create LB-REDIRECT --action-type redirect --action-value LB
-	gbp policy-action-create FW-REDIRECT --action-type redirect --action-value FW-2
-	gbp policy-action-create FW-LB-REDIRECT --action-type redirect --action-value FW-1-LB
-	gbp policy-action-create ALLOW --action-type allow
-	gbp policy-classifier-create HTTP-CLASSIFIER --protocol tcp --port-range 80 --direction bi
-	gbp policy-classifier-create TCP-CLASSIFIER --protocol tcp  --direction bi
-	gbp policy-classifier-create ICMP-CLASSIFIER --protocol icmp  --direction bi
-	gbp policy-rule-create HTTP-PR --classifier HTTP-CLASSIFIER --actions LB-REDIRECT
-	gbp policy-rule-create TCP-PR --classifier TCP-CLASSIFIER  --actions FW-REDIRECT
-	gbp policy-rule-create WEB-PR --classifier HTTP-CLASSIFIER --actions FW-LB-REDIRECT
-	gbp policy-rule-create  ICMPALLOW-PR --classifier ICMP-CLASSIFIER --actions ALLOW
-	gbp policy-rule-create TCPALLOW-PR --classifier TCP-CLASSIFIER --actions ALLOW
-	gbp policy-rule-set-create HTTP-PRS --policy-rules "ICMPALLOW-PR TCPALLOW-PR HTTP-PR"
-	gbp policy-rule-set-create TCP-PRS --policy-rules "ICMPALLOW-PR TCPALLOW-PR TCP-PR"
-	gbp policy-rule-set-create WEB-PRS --policy-rules "ICMPALLOW-PR TCPALLOW-PR"
-	gbp ptg-create DB
-	gbp ptg-create APP --network-service-policy LB-VIP-FIP-NSP
-	gbp ptg-create WEB  --network-service-policy  LB-VIP-FIP-NSP
-	gbp policy-target-group-update APP --provided-policy-rule-sets=HTTP-PRS  --consumed-policy-rule-sets TCP-PRS=None  
-	gbp policy-target-group-update WEB --provided-policy-rule-sets=WEB-PRS --consumed-policy-rule-sets HTTP-PRS=None 
-	gbp external-policy-create --external-segments $ext_segment  --consumed-policy-rule-sets WEB-PRS=None  EXTERNAL-WORLD
-	dynamicinsertion $1 
+        gbp policy-action-create LB-REDIRECT --action-type redirect --action-value LB
+        gbp policy-action-create FW-REDIRECT --action-type redirect --action-value FW-2
+        gbp policy-action-create FW-LB-REDIRECT --action-type redirect --action-value FW-1-LB
+        gbp policy-action-create ALLOW --action-type allow
+        gbp policy-classifier-create HTTP-CLASSIFIER --protocol tcp --port-range 80 --direction bi
+        gbp policy-classifier-create TCP-CLASSIFIER --protocol tcp  --direction bi
+        gbp policy-classifier-create ICMP-CLASSIFIER --protocol icmp  --direction bi
+        gbp policy-rule-create HTTP-PR --classifier HTTP-CLASSIFIER --actions LB-REDIRECT
+        gbp policy-rule-create TCP-PR --classifier TCP-CLASSIFIER  --actions FW-REDIRECT
+        gbp policy-rule-create WEB-PR --classifier HTTP-CLASSIFIER --actions FW-LB-REDIRECT
+        gbp policy-rule-create  ICMPALLOW-PR --classifier ICMP-CLASSIFIER --actions ALLOW
+        gbp policy-rule-create TCPALLOW-PR --classifier TCP-CLASSIFIER --actions ALLOW
+        gbp policy-rule-set-create HTTP-PRS --policy-rules "ICMPALLOW-PR TCPALLOW-PR HTTP-PR"
+        gbp policy-rule-set-create TCP-PRS --policy-rules "ICMPALLOW-PR TCPALLOW-PR TCP-PR"
+        gbp policy-rule-set-create WEB-PRS --policy-rules "ICMPALLOW-PR TCPALLOW-PR"
+        gbp ptg-create DB
+        gbp ptg-create APP --network-service-policy LB-VIP-FIP-NSP
+        gbp ptg-create WEB  --network-service-policy  LB-VIP-FIP-NSP
+        gbp policy-target-group-update APP --provided-policy-rule-sets=HTTP-PRS  --consumed-policy-rule-sets TCP-PRS=None  
+        gbp policy-target-group-update WEB --provided-policy-rule-sets=WEB-PRS --consumed-policy-rule-sets HTTP-PRS=None 
+        gbp external-policy-create --external-segments $ext_segment  --consumed-policy-rule-sets WEB-PRS=None  EXTERNAL-WORLD
+        dynamicinsertion $1 
 
-	add_mem DB 1
-	add_mem APP 2
-	add_mem WEB 2
+        add_mem DB 1
+        add_mem APP 2
+        add_mem WEB 2
 
     fi
 }

@@ -1,8 +1,11 @@
 #!/bin/bash
+
 source function.sh
-function usage(){
-echo "[Usage <arguments>: #1.create/update/delete#2. Source_file]"
-echo -e "Arg 1 : create or update or delete\nArg 2 : source file for your tenant "
+
+function usage()
+{
+    echo "[Usage <arguments>: #1.create/update/delete#2. Source_file]"
+    echo -e "Arg 1 : create or update or delete\nArg 2 : source file for your tenant "
 }
 
 #source file has to be changed for tenant and user detail
@@ -11,9 +14,10 @@ echo -e "Arg 1 : create or update or delete\nArg 2 : source file for your tenant
 
 if [ $# -lt 2 ] 
 then
-usage
-exit
+    usage
+    exit
 fi
+
 # change the variable for north-south/east-west chain
 if [ "$1" != "create" -a "$1" != "delete" -a "$1" != "update" ]
 then
@@ -22,15 +26,15 @@ then
     exit
 fi
 if [ $1 == "create" ]; then
-   pre_create 
+    pre_create 
 fi
 
 if [ $1 == "delete" ]; then
-source $PWD/keystone_directory/$2
-   cleanup $3
+    source $PWD/keystone_directory/$2
+    cleanup $3
 fi
 if [ $1 == "update" ]; then
-source $PWD/keystone_directory/$2
-   update $3
+    source $PWD/keystone_directory/$2
+    update $3
 fi
 
