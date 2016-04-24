@@ -35,7 +35,7 @@
 		"protocol": "tcp",
 		"name": "fw-tcp-rule",
 		"enabled": true,
-		"destination_port": "3396",
+		"destination_port": "3306",
 		"action": "allow",
 		"description": "fw config to allow tcp"
 			}

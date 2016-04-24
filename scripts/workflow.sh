@@ -35,12 +35,12 @@ function shared_validate()
     then
         echo -e "Create shared nodes , specs and nsp resource  in cloud_admin tenant ."
     else
-	unset OS_USERNAME
-	unset OS_TENANT_NAME
-	unset OS_PASSWORD
-	unset OS_AUTH_URL
-	unset OS_REGION_NAME
-	tenant_create
+        unset OS_USERNAME
+        unset OS_TENANT_NAME
+        unset OS_PASSWORD
+        unset OS_AUTH_URL
+        unset OS_REGION_NAME
+        tenant_create
 
     fi
 }
@@ -108,22 +108,22 @@ function tenant_create()
         then
             parallel $n $slot $operation
             : '
-unset OS_PROJECT_NAME
-unset OS_USER_DOMAIN_NAME
-unset OS_IDENTITY_API_VERSION
-unset OS_PROJECT_DOMAIN_NAME
-unset OS_USERNAME
-unset OS_TENANT_NAME
-source ./keystone_identity_v3
-sleep 120
+            unset OS_PROJECT_NAME
+            unset OS_USER_DOMAIN_NAME
+            unset OS_IDENTITY_API_VERSION
+            unset OS_PROJECT_DOMAIN_NAME
+            unset OS_USERNAME
+            unset OS_TENANT_NAME
+            source ./keystone_identity_v3
+            sleep 120
 
-for (( i=1; i<=$n; i++ ))
-do
-openstack user delete mem$i
-openstack project delete mem$i
-done
-rm -rf $PWD/keystone_directory 
-'
+            for (( i=1; i<=$n; i++ ))
+            do
+                openstack user delete mem$i
+                openstack project delete mem$i
+            done
+            rm -rf $PWD/keystone_directory 
+            '
         fi
     else
         echo -e $n " is not  multiple of " $slot
@@ -131,23 +131,6 @@ rm -rf $PWD/keystone_directory
 
 
 }
-#function shared_validate()
-#{
-#    source $PWD/keystonerc_cloud_admin
-#    node_name=$(gbp servicechain-node-list |grep -w LB |awk '{print $4}')
-#    if [ "$node_name" != "LB" ]
-#    then
-#        echo -e "Create shared nodes , specs and nsp resource  in cloud_admin tenant ."
-#    else
-#	unset OS_USERNAME
-#	unset OS_TENANT_NAME
-#	unset OS_PASSWORD
-#	unset OS_AUTH_URL
-#	unset OS_REGION_NAME
-#	tenant_create
-#
-#    fi
-#}
 
 function shared_resource()
 {
@@ -166,14 +149,14 @@ function shared_resource()
         then
             echo -e "Delete previous shared node and spec and nsp resources which u created in cloud_admin tenant ."
         else
-            
+
             : '
-gbp service-profile-create --shared True --servicetype FIREWALL --insertion-mode l3 --service-flavor asav --vendor oneconvergence FW
-gbp service-profile-create --shared True --servicetype LOADBALANCER --insertion-mode l3 --service-flavor haproxy --vendor oneconvergence LB
-gbp external-segment-create --ip-version 4 --cidr 1.102.1.254/24 --external-route destination=0.0.0.0/0,nexthop= --shared True Management-Out
-gbp external-segment-create --ip-version 4 --cidr 1.102.2.254/24 --external-route destination=0.0.0.0/0,nexthop= --shared True default
-gbp nat-pool-create --ip-version 4 --ip-pool 1.103.2.0/24 --shared True --external-segment default default-nat-pool
-'
+            gbp service-profile-create --shared True --servicetype FIREWALL --insertion-mode l3 --service-flavor asav --vendor oneconvergence FW
+            gbp service-profile-create --shared True --servicetype LOADBALANCER --insertion-mode l3 --service-flavor haproxy --vendor oneconvergence LB
+            gbp external-segment-create --ip-version 4 --cidr 1.102.1.254/24 --external-route destination=0.0.0.0/0,nexthop= --shared True Management-Out
+            gbp external-segment-create --ip-version 4 --cidr 1.102.2.254/24 --external-route destination=0.0.0.0/0,nexthop= --shared True default
+            gbp nat-pool-create --ip-version 4 --ip-pool 1.103.2.0/24 --shared True --external-segment default default-nat-pool
+            '
             gbp servicechain-node-create --service-profile $fw_prof --shared True --template-file $PWD/fw.template1 FW-1
             gbp servicechain-node-create --service-profile $fw_prof --shared True --template-file $PWD/fw.template2 FW-2
             gbp servicechain-node-create --service-profile $lb_prof --shared True --template-file $PWD/lb.template  LB
@@ -181,26 +164,23 @@ gbp nat-pool-create --ip-version 4 --ip-pool 1.103.2.0/24 --shared True --extern
             gbp servicechain-spec-create FW-2 --nodes  "FW-2"  --shared True
             gbp servicechain-spec-create FW-1-LB --nodes  "FW-1 LB" --shared True
             gbp network-service-policy-create LB-VIP-FIP-NSP --network-service-params "type=ip_single,name=vip_ip,value=self_subnet" --shared True
-
-            : '
-gbp policy-action-create LB-REDIRECT --action-type redirect --action-value LB --shared True
-gbp policy-action-create FW-REDIRECT --action-type redirect --action-value FW-2 --shared True
-gbp policy-action-create FW-LB-REDIRECT --action-type redirect --action-value FW-1-LB --shared True
-gbp policy-action-create ALLOW --action-type allow --shared True
-gbp policy-classifier-create HTTP-CLASSIFIER --protocol tcp --port-range 80 --direction bi --shared True
-gbp policy-classifier-create TCP-CLASSIFIER --protocol tcp  --direction bi --shared True
-gbp policy-classifier-create ICMP-CLASSIFIER --protocol icmp  --direction bi --shared True
-gbp policy-rule-create HTTP-ALLOW-PR --classifier HTTP-CLASSIFIER --actions ALLOW --shared True
-gbp policy-rule-create TCP-ALLOW-PR --classifier TCP-CLASSIFIER  --actions  ALLOW --shared True
-gbp policy-rule-create FW-LB-PR --classifier HTTP-CLASSIFIER --actions FW-LB-REDIRECT --shared True
-gbp policy-rule-create  LB-PR --classifier TCP-CLASSIFIER --actions LB-REDIRECT --shared True
-gbp policy-rule-create  FW-PR --classifier TCP-CLASSIFIER --actions FW-REDIRECT --shared True
-gbp policy-rule-set-create HTTP-ALLOW-PRS --policy-rules "HTTP-ALLOW-PR"  --shared True
-gbp policy-rule-set-create TCP-ALLOW-PRS --policy-rules "TCP-ALLOW-PR"  --shared True
-gbp policy-rule-set-create FW-LB-PRS --policy-rules "FW-LB-PR"  --shared True
-gbp policy-rule-set-create LB-PRS --policy-rules "LB-PR"  --shared True
-gbp policy-rule-set-create FW-PRS --policy-rules "FW-PR"  --shared True
-'
+            gbp policy-action-create LB-REDIRECT --action-type redirect --action-value LB --shared True
+            gbp policy-action-create FW-REDIRECT --action-type redirect --action-value FW-2 --shared True
+            gbp policy-action-create FW-LB-REDIRECT --action-type redirect --action-value FW-1-LB --shared True
+            gbp policy-action-create ALLOW --action-type allow --shared True
+            gbp policy-classifier-create ICMP-CLASSIFIER --protocol icmp --direction bi --shared True
+            gbp policy-classifier-create HTTP-CLASSIFIER --protocol tcp --port-range 80 --direction bi --shared True
+            gbp policy-classifier-create TCP-CLASSIFIER --protocol tcp  --direction bi --shared True
+            gbp policy-classifier-create ICMP-CLASSIFIER --protocol icmp  --direction bi --shared True
+            gbp policy-rule-create  ICMP-ALLOW-PR --classifier ICMP-CLASSIFIER --actions ALLOW--shared True
+            gbp policy-rule-create TCP-ALLOW-PR --classifier TCP-CLASSIFIER  --actions  ALLOW --shared True
+            gbp policy-rule-create FW-LB-PR --classifier HTTP-CLASSIFIER --actions FW-LB-REDIRECT --shared True
+            gbp policy-rule-create  LB-PR --classifier HTTP-CLASSIFIER --actions LB-REDIRECT --shared True
+            gbp policy-rule-create  FW-PR --classifier TCP-CLASSIFIER --actions FW-REDIRECT --shared True
+            gbp policy-rule-set-create HTTP-LB-REDIRECT-PRS --policy-rules "ICMP-ALLOW-PR TCP-ALLOW-PR LB-PR"  --shared True
+            gbp policy-rule-set-create TCP-FW-REDIRECT-PRS --policy-rules "ICMP-ALLOW-PR TCP-ALLOW-PR FW-PR"  --shared True
+            gbp policy-rule-set-create WEB-FW-LB-REDIRECT-PRS --policy-rules "ICMP-ALLOW-PR TCP-ALLOW-PR FW-LB-PR"  --shared True
+            gbp policy-rule-set-create WEB-PRS --policy-rules "ICMP-ALLOW-PR TCP-ALLOW-PR"  --shared True
         fi
     fi
     if [ "$sop" == "delete" ]
@@ -215,10 +195,27 @@ gbp policy-rule-set-create FW-PRS --policy-rules "FW-PR"  --shared True
         if [ "$flag" == "Y" ]
         then
             : '
-gbp external-segment-create --ip-version 4 --cidr 1.102.1.254/24 --external-route destination=0.0.0.0/0,nexthop= --shared True Management-Out
-gbp external-segment-create --ip-version 4 --cidr 1.102.2.254/24 --external-route destination=0.0.0.0/0,nexthop= --shared True default
-gbp nat-pool-create --ip-version 4 --ip-pool 1.103.2.0/24 --shared True --external-segment default default-nat-pool
-'
+            gbp external-segment-create --ip-version 4 --cidr 1.102.1.254/24 --external-route destination=0.0.0.0/0,nexthop= --shared True Management-Out
+            gbp external-segment-create --ip-version 4 --cidr 1.102.2.254/24 --external-route destination=0.0.0.0/0,nexthop= --shared True default
+            gbp nat-pool-create --ip-version 4 --ip-pool 1.103.2.0/24 --shared True --external-segment default default-nat-pool
+            '
+            gbp policy-rule-set-delete WEB-PRS
+            gbp policy-rule-set-delete WEB-FW-LB-REDIRECT-PRS
+            gbp policy-rule-set-delete TCP-FW-REDIRECT-PRS
+            gbp policy-rule-set-delete HTTP-LB-REDIRECT-PRS
+            gbp policy-rule-delete FW-PR
+            gbp policy-rule-delete LB-PR
+            gbp policy-rule-delete FW-LB-PR
+            gbp policy-rule-delete TCP-ALLOW-PR
+            gbp policy-rule-delete ICMP-ALLOW-PR
+            gbp policy-classifier-delete ICMP-CLASSIFIER
+            gbp policy-classifier-delete TCP-CLASSIFIER
+            gbp policy-classifier-delete HTTP-CLASSIFIER
+            gbp policy-classifier-delete ICMP-CLASSIFIER
+            gbp policy-action-delete FW-LB-REDIRECT
+            gbp policy-action-delete FW-REDIRECT
+            gbp policy-action-delete LB-REDIRECT
+            gbp policy-action-delete ALLOW
             gbp network-service-policy-delete LB-VIP-FIP-NSP
             gbp servicechain-spec-delete FW-1-LB
             gbp servicechain-spec-delete FW-2 
