@@ -1,16 +1,9 @@
 #!/bin/bash
-
 source gbp_resource.sh
-
-function usage()
-{
+function usage(){
     echo "[Usage <arguments>: #1.create/update/delete#2. Source_file]"
     echo -e "Arg 1 : create or update or delete\nArg 2 : source file for your tenant "
 }
-
-
-#source source-mem14-delete
-#source $PWD/keystone_directory/$2
 
 if [ $# -lt 2 ] 
 then
