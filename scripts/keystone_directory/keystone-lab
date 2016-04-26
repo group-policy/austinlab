@@ -1,9 +1,0 @@
-export OS_USERNAME=lab
-export OS_PROJECT_NAME=lab
-export OS_TENANT_NAME=lab
-export OS_PASSWORD=lab
-export OS_AUTH_URL=http://10.251.1.20:5000/v3/
-export PS1='[\u@\h \W(lab)]$ '
-export OS_IDENTITY_API_VERSION=3
-export OS_USER_DOMAIN_NAME=default
-export OS_PROJECT_DOMAIN_NAME=default
