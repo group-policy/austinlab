@@ -101,13 +101,14 @@ function dynamicinsertion()
     then
         echo -e "PRS update for fw "
         gbp policy-target-group-update DB --provided-policy-rule-sets=TCP-FW-REDIRECT-PRS
+        gbp policy-target-group-update APP --consumed-policy-rule-sets=TCP-FW-REDIRECT-PRS    
     fi
 }
 
 
 function pre_create(){
-   action_name=$(gbp pa-list  |grep -w  LB-REDIRECT |awk '{print $4}')
-    if [ "$action_name" == "LB-REDIRECT" ]
+   prs_name=$(gbp prs-list  |grep -w  HTTP-LB-REDIRECT-PRS |awk '{print $4}')
+    if [ "$prs_name" == "HTTP-LB-REDIRECT-PRS" ]
     then
         echo -e "Delete previous gbp unshared resources which u created in tenant ."
     else
